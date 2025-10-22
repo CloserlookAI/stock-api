@@ -19,7 +19,12 @@ export default function MarqueeWidget() {
         const response = await fetch('/api/market');
         const result = await response.json();
         if (result.success) {
-          const formatted = result.data.map((item: any) => ({
+          const formatted = result.data.map((item: {
+            symbol: string;
+            regularMarketPrice: number;
+            regularMarketChange: number;
+            regularMarketChangePercent: number;
+          }) => ({
             symbol: item.symbol.replace('^', ''),
             price: item.regularMarketPrice,
             change: item.regularMarketChange,

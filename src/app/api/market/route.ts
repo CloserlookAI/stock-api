@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-const yf = require('yahoo-finance2').default;
+import yf from 'yahoo-finance2';
 
 // Disable caching for real-time data
 export const dynamic = 'force-dynamic';
@@ -40,8 +40,8 @@ export async function GET() {
             regularMarketOpen: quote.regularMarketOpen || 0,
             regularMarketPreviousClose: quote.regularMarketPreviousClose || 0,
           };
-        } catch (error: any) {
-          console.error(`Error fetching ${symbol}:`, error.message);
+        } catch (error) {
+          console.error(`Error fetching ${symbol}:`, error instanceof Error ? error.message : 'Unknown error');
           return null;
         }
       })
@@ -92,10 +92,10 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       isMockData: false,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Market data fetch error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch market data', message: error.message },
+      { success: false, error: 'Failed to fetch market data', message: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

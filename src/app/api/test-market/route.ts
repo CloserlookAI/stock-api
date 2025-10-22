@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-const yf = require('yahoo-finance2').default;
+import yf from 'yahoo-finance2';
 
 export async function GET() {
   try {
@@ -16,10 +16,10 @@ export async function GET() {
       data: quote,
       timestamp: new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Test error:', error);
     return NextResponse.json(
-      { success: false, error: error.message, stack: error.stack },
+      { success: false, error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined },
       { status: 500 }
     );
   }

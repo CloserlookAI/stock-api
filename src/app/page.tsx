@@ -2,8 +2,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Header } from "@/components/ui/header";
-import { TrendingUp, TrendingDown, Activity, Newspaper, BarChart, Search, X } from "lucide-react";
-import TradingViewWidget from "@/components/TradingViewWidget";
+import { TrendingUp, TrendingDown, Activity, BarChart, Search, X } from "lucide-react";
+import ModernTicker from "@/components/ModernTicker";
 import TradingViewChart from "@/components/TradingViewChart";
 import { useEffect, useState } from "react";
 
@@ -121,10 +121,8 @@ export default function Home() {
       <Header />
 
       <main className="pt-16">
-        {/* TradingView Ticker Tape */}
-        <div className="w-full">
-          <TradingViewWidget />
-        </div>
+        {/* Modern Ticker Tape */}
+        <ModernTicker />
 
         {/* Market Stats - Full Width */}
         <div className="w-full px-6 py-8">
@@ -511,67 +509,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Live News Section - Full Width */}
-        <div className="w-full px-6 pb-12">
-          <Card className="border-neutral-800/50">
-            <CardHeader className="border-b border-neutral-800/50">
-              <div className="flex items-center gap-2">
-                <Newspaper className="h-5 w-5 text-neutral-50" />
-                <CardTitle>Live Market News</CardTitle>
-              </div>
-              <CardDescription>Latest updates and insights from global markets</CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  {
-                    title: "Fed maintains interest rates amid economic uncertainty",
-                    time: "2 hours ago",
-                    source: "Financial Times",
-                    category: "Policy"
-                  },
-                  {
-                    title: "Tech stocks rally as AI investments surge to new heights",
-                    time: "4 hours ago",
-                    source: "Bloomberg",
-                    category: "Technology"
-                  },
-                  {
-                    title: "Global markets respond positively to new trade agreements",
-                    time: "6 hours ago",
-                    source: "Reuters",
-                    category: "Global"
-                  },
-                  {
-                    title: "Energy sector sees unprecedented growth in renewable investments",
-                    time: "8 hours ago",
-                    source: "CNBC",
-                    category: "Energy"
-                  },
-                ].map((news, idx) => (
-                  <div
-                    key={idx}
-                    className="p-5 rounded-lg border border-neutral-800/50 hover:border-neutral-700 bg-neutral-900/30 hover:bg-neutral-900/50 transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-start gap-3 mb-3">
-                      <span className="px-2 py-1 text-xs font-medium rounded bg-neutral-800 text-neutral-300 border border-neutral-700">
-                        {news.category}
-                      </span>
-                    </div>
-                    <h3 className="font-medium mb-3 group-hover:text-neutral-300 transition-colors leading-relaxed">
-                      {news.title}
-                    </h3>
-                    <div className="flex items-center gap-3 text-xs text-neutral-500">
-                      <span className="font-medium">{news.source}</span>
-                      <span>•</span>
-                      <span>{news.time}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </main>
 
       {/* Footer */}

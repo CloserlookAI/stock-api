@@ -10,10 +10,11 @@ function TradingViewChart({ symbols = ["NASDAQ:TSLA"] }: TradingViewChartProps) 
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!container.current) return;
+    const currentContainer = container.current;
+    if (!currentContainer) return;
 
     // Clear any existing content
-    container.current.innerHTML = '';
+    currentContainer.innerHTML = '';
 
     const script = document.createElement("script");
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js";
@@ -68,11 +69,11 @@ function TradingViewChart({ symbols = ["NASDAQ:TSLA"] }: TradingViewChartProps) 
       "isTransparent": false
     });
 
-    container.current.appendChild(script);
+    currentContainer.appendChild(script);
 
     return () => {
-      if (container.current) {
-        container.current.innerHTML = '';
+      if (currentContainer) {
+        currentContainer.innerHTML = '';
       }
     };
   }, [symbols]);
