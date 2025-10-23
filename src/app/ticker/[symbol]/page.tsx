@@ -64,20 +64,16 @@ export default function TickerDetailPage() {
 
   const { isVisible, message, showToast, hideToast } = useToast();
 
-  // Progressive segment display - add segments one by one with delay
+  // Progressive segment display - show all segments immediately to avoid glitching
   useEffect(() => {
     if (currentSegments.length === 0) {
       setDisplayedSegments([]);
       return;
     }
 
-    // If we have new segments, add them progressively
-    if (currentSegments.length > displayedSegments.length) {
-      const timer = setTimeout(() => {
-        setDisplayedSegments(currentSegments.slice(0, displayedSegments.length + 1));
-      }, 300); // Add one segment every 300ms
-
-      return () => clearTimeout(timer);
+    // Show all segments immediately to prevent UI glitching
+    if (currentSegments.length !== displayedSegments.length) {
+      setDisplayedSegments(currentSegments);
     }
   }, [currentSegments, displayedSegments.length]);
 
@@ -432,11 +428,12 @@ export default function TickerDetailPage() {
                     const segChannel = String(segment.channel || '').toLowerCase();
                     const segTool = String(segment.tool || '');
                     const segText = String(segment.text || '');
+                    const uniqueKey = `${segType}-${segTool || 'notool'}-${index}`;
 
                     // Show thinking/commentary - like ra-cloud
                     if (segType === 'commentary' || segChannel === 'analysis' || segChannel === 'commentary') {
                       return (
-                        <div key={index} className="animate-fadeIn">
+                        <div key={uniqueKey}>
                           <div className="bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/50 dark:border-purple-800/30 rounded-lg p-3">
                             <div className="flex items-start gap-3">
                               <div className="text-purple-400 mt-0.5">
@@ -456,11 +453,11 @@ export default function TickerDetailPage() {
                     // Show tool calls - like ra-cloud
                     if (segType === 'tool_call') {
                       return (
-                        <div key={index} className="animate-fadeIn">
+                        <div key={uniqueKey}>
                           <details className="group bg-neutral-800/30 border border-neutral-700/50 rounded-lg overflow-hidden hover:border-neutral-600/50 transition-colors">
                             <summary className="cursor-pointer p-3 flex items-center gap-3 hover:bg-neutral-800/50">
                               <div className="flex items-center gap-2 flex-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
                                 <span className="text-xs font-medium text-blue-400">{segTool}</span>
                               </div>
                               <svg className="w-4 h-4 text-neutral-500 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -483,7 +480,7 @@ export default function TickerDetailPage() {
                     // Show tool results - like ra-cloud
                     if (segType === 'tool_result') {
                       return (
-                        <div key={index} className="animate-fadeIn">
+                        <div key={uniqueKey}>
                           <details className="group bg-neutral-800/30 border border-neutral-700/50 rounded-lg overflow-hidden hover:border-neutral-600/50 transition-colors">
                             <summary className="cursor-pointer p-3 flex items-center gap-3 hover:bg-neutral-800/50">
                               <div className="flex items-center gap-2 flex-1">
@@ -510,7 +507,7 @@ export default function TickerDetailPage() {
 
                     // Fallback: show any unrecognized segment types
                     return (
-                      <div key={index} className="animate-fadeIn">
+                      <div key={uniqueKey}>
                         <div className="bg-neutral-800/20 border border-neutral-700/30 rounded-lg p-3">
                           <div className="text-xs text-neutral-400">
                             <div className="font-medium mb-1 text-neutral-300">{segType || 'processing'}</div>
@@ -723,10 +720,11 @@ export default function TickerDetailPage() {
                     const segChannel = String(segment.channel || '').toLowerCase();
                     const segTool = String(segment.tool || '');
                     const segText = String(segment.text || '');
+                    const uniqueKey = `completed-${segType}-${segTool || 'notool'}-${index}`;
 
                     if (segType === 'commentary' || segChannel === 'analysis' || segChannel === 'commentary') {
                       return (
-                        <div key={index} className="animate-fadeIn">
+                        <div key={uniqueKey}>
                           <div className="bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/50 dark:border-purple-800/30 rounded-lg p-3">
                             <div className="flex items-start gap-3">
                               <div className="text-purple-400 mt-0.5">
@@ -745,7 +743,7 @@ export default function TickerDetailPage() {
 
                     if (segType === 'tool_call') {
                       return (
-                        <div key={index} className="animate-fadeIn">
+                        <div key={uniqueKey}>
                           <details className="group bg-neutral-800/30 border border-neutral-700/50 rounded-lg overflow-hidden hover:border-neutral-600/50 transition-colors">
                             <summary className="cursor-pointer p-3 flex items-center gap-3 hover:bg-neutral-800/50">
                               <div className="flex items-center gap-2 flex-1">
@@ -771,7 +769,7 @@ export default function TickerDetailPage() {
 
                     if (segType === 'tool_result') {
                       return (
-                        <div key={index} className="animate-fadeIn">
+                        <div key={uniqueKey}>
                           <details className="group bg-neutral-800/30 border border-neutral-700/50 rounded-lg overflow-hidden hover:border-neutral-600/50 transition-colors">
                             <summary className="cursor-pointer p-3 flex items-center gap-3 hover:bg-neutral-800/50">
                               <div className="flex items-center gap-2 flex-1">
