@@ -24,6 +24,8 @@ interface ResponseObject {
   status: string;
   segments: unknown[];
   output_content: unknown[];
+  updated_at?: string;
+  created_at?: string;
 }
 
 export async function GET(
@@ -115,7 +117,7 @@ export async function GET(
             const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
             existingCompletedResponse = responses.find((r: ResponseObject) => {
               const isCompleted = r.status === 'completed' || r.status === 'success' || r.status === 'done';
-              const isRecent = new Date((r as any).updated_at || (r as any).created_at) > fiveMinutesAgo;
+              const isRecent = new Date(r.updated_at || r.created_at || Date.now()) > fiveMinutesAgo;
               return isCompleted && isRecent;
             }) || null;
           }

@@ -341,6 +341,15 @@ Required sections:
       }
     }
 
+    // This should never happen due to the while loop logic, but TypeScript needs the check
+    if (!response) {
+      console.error('❌ No response received after polling');
+      return NextResponse.json(
+        { error: 'Failed to get response from agent' },
+        { status: 500 }
+      );
+    }
+
     console.log('Number of segments:', response.segments?.length || 0);
     console.log('Number of output_content items:', response.output_content?.length || 0);
     console.log('Returning success response to frontend');

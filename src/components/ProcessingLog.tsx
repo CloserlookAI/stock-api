@@ -15,7 +15,7 @@ interface Segment {
   };
   channel?: string;
   text?: string;
-  payload?: {
+  payload?: string | {
     filename?: string;
     command?: string;
     url?: string;
@@ -229,17 +229,21 @@ export default function ProcessingLog({ segments, agentName }: ProcessingLogProp
                       <div className="mt-3">
                         <p className="text-xs font-semibold text-neutral-400 mb-2">Output:</p>
                         <div className="text-xs text-neutral-300">
-                          {typeof segment.payload === 'string' ? (
-                            <pre className="overflow-x-auto bg-black/40 p-3 rounded border border-neutral-800/50 font-mono max-h-60 overflow-y-auto custom-scrollbar">
-                              {segment.payload.length > 1000
-                                ? segment.payload.substring(0, 1000) + '...\n(truncated)'
-                                : segment.payload}
-                            </pre>
-                          ) : (
-                            <pre className="overflow-x-auto bg-black/40 p-3 rounded border border-neutral-800/50 font-mono max-h-60 overflow-y-auto custom-scrollbar">
-                              {JSON.stringify(segment.payload, null, 2)}
-                            </pre>
-                          )}
+                          {(() => {
+                            const payload = segment.payload;
+                            if (typeof payload === 'string') {
+                              return (
+                                <pre className="overflow-x-auto bg-black/40 p-3 rounded border border-neutral-800/50 font-mono max-h-60 overflow-y-auto custom-scrollbar">
+                                  {payload.length > 1000 ? payload.substring(0, 1000) + '...\n(truncated)' : payload}
+                                </pre>
+                              );
+                            }
+                            return (
+                              <pre className="overflow-x-auto bg-black/40 p-3 rounded border border-neutral-800/50 font-mono max-h-60 overflow-y-auto custom-scrollbar">
+                                {JSON.stringify(payload, null, 2)}
+                              </pre>
+                            );
+                          })()}
                         </div>
                       </div>
                     )}

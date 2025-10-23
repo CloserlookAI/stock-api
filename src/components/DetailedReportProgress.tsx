@@ -261,12 +261,6 @@ export default function DetailedReportProgress({ segments, isComplete }: Detaile
     }
   };
 
-  const getProgressPercentage = () => {
-    if (steps.length === 0) return 0;
-    const completed = steps.filter(s => s.status === 'completed').length;
-    return Math.round((completed / steps.length) * 100);
-  };
-
   const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
 
   return (

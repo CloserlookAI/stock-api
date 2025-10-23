@@ -38,6 +38,7 @@ interface Segment {
   };
   channel?: string;
   text?: string;
+  output?: unknown;
   payload?: {
     url?: string;
     filename?: string;
@@ -494,7 +495,7 @@ export default function TickerDetailPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
                             </summary>
-                            {segment.output && (
+                            {!!segment.output && (
                               <div className="border-t border-neutral-700/50 bg-neutral-900/50 p-3">
                                 <div className="text-xs text-neutral-500 mb-2">Output</div>
                                 <pre className="text-xs text-neutral-300 bg-neutral-950/50 p-2 rounded overflow-x-auto max-h-60 border border-neutral-800">
@@ -782,7 +783,7 @@ export default function TickerDetailPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
                             </summary>
-                            {segment.output && (
+                            {!!segment.output && (
                               <div className="border-t border-neutral-700/50 bg-neutral-900/50 p-3">
                                 <div className="text-xs text-neutral-500 mb-2">Output</div>
                                 <pre className="text-xs text-neutral-300 bg-neutral-950/50 p-2 rounded overflow-x-auto max-h-60 border border-neutral-800">
