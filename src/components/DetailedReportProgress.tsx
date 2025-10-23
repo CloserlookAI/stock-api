@@ -61,6 +61,7 @@ export default function DetailedReportProgress({ segments, isComplete }: Detaile
     if (currentIdx >= 0 && processedSteps[currentIdx]) {
       setExpandedSteps(prev => new Set(prev).add(processedSteps[currentIdx].id));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [segments, isComplete]);
 
   const toggleStep = (stepId: string) => {

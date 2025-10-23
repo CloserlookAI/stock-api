@@ -5,9 +5,6 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Header } from "@/components/ui/header";
 import { ArrowLeft, TrendingUp, TrendingDown, Cpu, ExternalLink } from "lucide-react";
-import ReportProgress from "@/components/ReportProgress";
-import ProcessingLog from "@/components/ProcessingLog";
-import DetailedReportProgress from "@/components/DetailedReportProgress";
 import { Toast, useToast } from "@/components/ui/toast";
 
 interface AgentResponse {
@@ -56,12 +53,9 @@ export default function TickerDetailPage() {
   const [loading, setLoading] = useState(true);
   const [agentData, setAgentData] = useState<AgentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [segments, setSegments] = useState<Segment[]>([]);
   const [htmlReport, setHtmlReport] = useState<string>('');
   const [reportUrl, setReportUrl] = useState<string>('');
   const [loadingMessage, setLoadingMessage] = useState<string>('Initializing agent...');
-  const [responseId, setResponseId] = useState<string>('');
-  const [agentName, setAgentName] = useState<string>('');
   const [agentState, setAgentState] = useState<string>('init');
   const [currentSegments, setCurrentSegments] = useState<Segment[]>([]);
   const [displayedSegments, setDisplayedSegments] = useState<Segment[]>([]);
@@ -90,7 +84,6 @@ export default function TickerDetailPage() {
   useEffect(() => {
 
     let isMounted = true;
-    let messageTimer: NodeJS.Timeout | null = null;
     let pollInterval: NodeJS.Timeout | null = null;
 
     const fetchAgentReport = async () => {
@@ -98,12 +91,9 @@ export default function TickerDetailPage() {
         // Reset all state when component mounts or symbol changes
         setLoading(true);
         setError(null);
-        setSegments([]);
         setHtmlReport('');
         setReportUrl('');
         setAgentData(null);
-        setResponseId('');
-        setAgentName('');
         setLoadingMessage('Initializing agent...');
         setAgentState('init');
         setCurrentSegments([]);
@@ -154,7 +144,6 @@ export default function TickerDetailPage() {
 
         // Construct agent name directly (we know the pattern)
         const foundAgentName = `stockapi-agent-${symbol.toLowerCase()}`;
-        setAgentName(foundAgentName);
 
         // Wait a moment for the response to be created
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -193,7 +182,6 @@ export default function TickerDetailPage() {
                     if (newSegmentCount > previousSegmentCount) {
                       // Add only the new segments progressively
                       setCurrentSegments(latestResponse.segments);
-                      setSegments(latestResponse.segments);
                       setPreviousSegmentCount(newSegmentCount);
                     }
                   }
@@ -214,7 +202,7 @@ export default function TickerDetailPage() {
                   }
                 }
               }
-            } catch (pollError) {
+            } catch {
               // Silent error handling
             }
           };
@@ -240,10 +228,9 @@ export default function TickerDetailPage() {
     // Cleanup function
     return () => {
       isMounted = false;
-      if (messageTimer) clearTimeout(messageTimer);
       if (pollInterval) clearInterval(pollInterval);
     };
-  }, [symbol, showToast]);
+  }, [symbol, showToast, previousSegmentCount]);
 
   const extractHtmlReport = (response: AgentResponse['response']): string => {
     // Try to extract HTML from output_content
