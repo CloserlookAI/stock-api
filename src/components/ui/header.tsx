@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Activity, BarChart3, MessageSquare } from "lucide-react";
+import { Activity, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -34,20 +34,6 @@ export function Header() {
             >
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Market</span>
-            </Button>
-          </Link>
-          <Link href="/chat">
-            <Button
-              variant="ghost"
-              className={cn(
-                "gap-2 transition-all",
-                pathname === "/chat"
-                  ? "bg-neutral-800/80 text-neutral-50"
-                  : "text-neutral-400 hover:text-neutral-50 hover:bg-neutral-800/50"
-              )}
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Chat</span>
             </Button>
           </Link>
         </nav>

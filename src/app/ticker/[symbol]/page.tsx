@@ -58,24 +58,9 @@ export default function TickerDetailPage() {
   const [reportUrl, setReportUrl] = useState<string>('');
   const [loadingMessage, setLoadingMessage] = useState<string>('Initializing agent...');
   const [agentState, setAgentState] = useState<string>('init');
-  const [currentSegments, setCurrentSegments] = useState<Segment[]>([]);
-  const [displayedSegments, setDisplayedSegments] = useState<Segment[]>([]);
-  const [previousSegmentCount, setPreviousSegmentCount] = useState<number>(0);
+  const [segments, setSegments] = useState<Segment[]>([]);
 
   const { isVisible, message, showToast, hideToast } = useToast();
-
-  // Progressive segment display - show all segments immediately to avoid glitching
-  useEffect(() => {
-    if (currentSegments.length === 0) {
-      setDisplayedSegments([]);
-      return;
-    }
-
-    // Show all segments immediately to prevent UI glitching
-    if (currentSegments.length !== displayedSegments.length) {
-      setDisplayedSegments(currentSegments);
-    }
-  }, [currentSegments, displayedSegments.length]);
 
   // Main polling implementation (like ra-cloud)
   useEffect(() => {
@@ -93,8 +78,7 @@ export default function TickerDetailPage() {
         setAgentData(null);
         setLoadingMessage('Initializing agent...');
         setAgentState('init');
-        setCurrentSegments([]);
-        setPreviousSegmentCount(0);
+        setSegments([]);
 
         // Start the request but don't wait for it - we'll poll for progress
         fetch(`/api/agent/${symbol}`, {
@@ -171,16 +155,9 @@ export default function TickerDetailPage() {
                   // Get the most recent response
                   const latestResponse = responses[0];
 
-                  // Progressive segment updates - only add NEW segments
-                  if (latestResponse.segments && Array.isArray(latestResponse.segments) && latestResponse.segments.length > 0) {
-                    const newSegmentCount = latestResponse.segments.length;
-
-                    // Only update if there are NEW segments
-                    if (newSegmentCount > previousSegmentCount) {
-                      // Add only the new segments progressively
-                      setCurrentSegments(latestResponse.segments);
-                      setPreviousSegmentCount(newSegmentCount);
-                    }
+                  // Update segments - always update to show latest segments
+                  if (latestResponse.segments && Array.isArray(latestResponse.segments)) {
+                    setSegments(latestResponse.segments);
                   }
 
                   // Update agent state based on response status
@@ -227,7 +204,7 @@ export default function TickerDetailPage() {
       isMounted = false;
       if (pollInterval) clearInterval(pollInterval);
     };
-  }, [symbol, showToast, previousSegmentCount]);
+  }, [symbol, showToast]);
 
   const extractHtmlReport = (response: AgentResponse['response']): string => {
     // Try to extract HTML from output_content
@@ -412,18 +389,19 @@ export default function TickerDetailPage() {
             </div>
 
             {/* Real-time agent activity - ALWAYS show when segments exist (even after completion) */}
-            {displayedSegments.length > 0 && (
-              <div className="w-full mt-8">
-                <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wide">
+            {segments.length > 0 && (
+              <div className="w-full mt-8 border-2 border-blue-500/30 rounded-lg p-6 bg-neutral-900/30">
+                <div className="mb-6 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-neutral-200 uppercase tracking-wide flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
                       Agent Activity
                     </h3>
-                    <span className="text-xs text-neutral-500">
-                      {displayedSegments.length} / {currentSegments.length} {currentSegments.length === 1 ? 'operation' : 'operations'}
+                    <span className="text-sm text-neutral-400 bg-neutral-800/50 px-3 py-1 rounded-full">
+                      {segments.length} {segments.length === 1 ? 'operation' : 'operations'}
                     </span>
                   </div>
-                  <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                  {displayedSegments.map((segment, index) => {
+                  <div className="space-y-3 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
+                  {segments.map((segment, index) => {
                     const segType = String(segment.type || '').toLowerCase();
                     const segChannel = String(segment.channel || '').toLowerCase();
                     const segTool = String(segment.tool || '');
@@ -702,101 +680,101 @@ export default function TickerDetailPage() {
             </Card>
           </div>
 
+          {/* Agent Activity - Show in completed state too */}
+          {segments.length > 0 && (
+            <div className="w-full mt-8 border-2 border-blue-500/30 rounded-lg p-6 bg-neutral-900/30">
+              <div className="mb-6 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-neutral-200 uppercase tracking-wide flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                  Agent Activity Log
+                </h3>
+                <span className="text-sm text-neutral-400 bg-neutral-800/50 px-3 py-1 rounded-full">
+                  {segments.length} {segments.length === 1 ? 'operation' : 'operations'} completed
+                </span>
+              </div>
+              <div className="space-y-3 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
+                {segments.map((segment, index) => {
+                  const segType = String(segment.type || '').toLowerCase();
+                  const segChannel = String(segment.channel || '').toLowerCase();
+                  const segTool = String(segment.tool || '');
+                  const segText = String(segment.text || '');
+                  const uniqueKey = `completed-${segType}-${segTool || 'notool'}-${index}`;
 
-          {/* Agent Activity - Show after completion too */}
-          {displayedSegments.length > 0 && (
-            <div className="w-full mt-8">
-              <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-neutral-400 uppercase tracking-wide">
-                    Agent Activity
-                  </h3>
-                  <span className="text-xs text-neutral-500">
-                    {displayedSegments.length} {displayedSegments.length === 1 ? 'operation' : 'operations'} completed
-                  </span>
-                </div>
-                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                  {displayedSegments.map((segment, index) => {
-                    const segType = String(segment.type || '').toLowerCase();
-                    const segChannel = String(segment.channel || '').toLowerCase();
-                    const segTool = String(segment.tool || '');
-                    const segText = String(segment.text || '');
-                    const uniqueKey = `completed-${segType}-${segTool || 'notool'}-${index}`;
-
-                    if (segType === 'commentary' || segChannel === 'analysis' || segChannel === 'commentary') {
-                      return (
-                        <div key={uniqueKey}>
-                          <div className="bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/50 dark:border-purple-800/30 rounded-lg p-3">
-                            <div className="flex items-start gap-3">
-                              <div className="text-purple-400 mt-0.5">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                </svg>
-                              </div>
-                              <div className="flex-1 text-sm text-purple-900 dark:text-purple-100 italic">
-                                {segText}
-                              </div>
+                  if (segType === 'commentary' || segChannel === 'analysis' || segChannel === 'commentary') {
+                    return (
+                      <div key={uniqueKey}>
+                        <div className="bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/50 dark:border-purple-800/30 rounded-lg p-3">
+                          <div className="flex items-start gap-3">
+                            <div className="text-purple-400 mt-0.5">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                              </svg>
+                            </div>
+                            <div className="flex-1 text-sm text-purple-900 dark:text-purple-100 italic">
+                              {segText}
                             </div>
                           </div>
                         </div>
-                      );
-                    }
+                      </div>
+                    );
+                  }
 
-                    if (segType === 'tool_call') {
-                      return (
-                        <div key={uniqueKey}>
-                          <details className="group bg-neutral-800/30 border border-neutral-700/50 rounded-lg overflow-hidden hover:border-neutral-600/50 transition-colors">
-                            <summary className="cursor-pointer p-3 flex items-center gap-3 hover:bg-neutral-800/50">
-                              <div className="flex items-center gap-2 flex-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                                <span className="text-xs font-medium text-blue-400">{segTool}</span>
-                              </div>
-                              <svg className="w-4 h-4 text-neutral-500 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </summary>
-                            {segment.args && (
-                              <div className="border-t border-neutral-700/50 bg-neutral-900/50 p-3">
-                                <div className="text-xs text-neutral-500 mb-2">Arguments</div>
-                                <pre className="text-xs text-neutral-300 bg-neutral-950/50 p-2 rounded overflow-x-auto border border-neutral-800">
-                                  {JSON.stringify(segment.args, null, 2)}
-                                </pre>
-                              </div>
-                            )}
-                          </details>
-                        </div>
-                      );
-                    }
+                  if (segType === 'tool_call') {
+                    return (
+                      <div key={uniqueKey}>
+                        <details className="group bg-neutral-800/30 border border-neutral-700/50 rounded-lg overflow-hidden hover:border-neutral-600/50 transition-colors">
+                          <summary className="cursor-pointer p-3 flex items-center gap-3 hover:bg-neutral-800/50">
+                            <div className="flex items-center gap-2 flex-1">
+                              <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                              <span className="text-xs font-medium text-blue-400">{segTool}</span>
+                            </div>
+                            <svg className="w-4 h-4 text-neutral-500 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </summary>
+                          {segment.args && (
+                            <div className="border-t border-neutral-700/50 bg-neutral-900/50 p-3">
+                              <div className="text-xs text-neutral-500 mb-2">Arguments</div>
+                              <pre className="text-xs text-neutral-300 bg-neutral-950/50 p-2 rounded overflow-x-auto border border-neutral-800">
+                                {JSON.stringify(segment.args, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                        </details>
+                      </div>
+                    );
+                  }
 
-                    if (segType === 'tool_result') {
-                      return (
-                        <div key={uniqueKey}>
-                          <details className="group bg-neutral-800/30 border border-neutral-700/50 rounded-lg overflow-hidden hover:border-neutral-600/50 transition-colors">
-                            <summary className="cursor-pointer p-3 flex items-center gap-3 hover:bg-neutral-800/50">
-                              <div className="flex items-center gap-2 flex-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div>
-                                <span className="text-xs font-medium text-green-400">{segTool}</span>
-                                <span className="text-xs text-neutral-500">→ completed</span>
-                              </div>
-                              <svg className="w-4 h-4 text-neutral-500 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </summary>
-                            {!!segment.output && (
-                              <div className="border-t border-neutral-700/50 bg-neutral-900/50 p-3">
-                                <div className="text-xs text-neutral-500 mb-2">Output</div>
-                                <pre className="text-xs text-neutral-300 bg-neutral-950/50 p-2 rounded overflow-x-auto max-h-60 border border-neutral-800">
-                                  {typeof segment.output === 'string' ? segment.output : JSON.stringify(segment.output, null, 2)}
-                                </pre>
-                              </div>
-                            )}
-                          </details>
-                        </div>
-                      );
-                    }
+                  if (segType === 'tool_result') {
+                    return (
+                      <div key={uniqueKey}>
+                        <details className="group bg-neutral-800/30 border border-neutral-700/50 rounded-lg overflow-hidden hover:border-neutral-600/50 transition-colors">
+                          <summary className="cursor-pointer p-3 flex items-center gap-3 hover:bg-neutral-800/50">
+                            <div className="flex items-center gap-2 flex-1">
+                              <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div>
+                              <span className="text-xs font-medium text-green-400">{segTool}</span>
+                              <span className="text-xs text-neutral-500">→ completed</span>
+                            </div>
+                            <svg className="w-4 h-4 text-neutral-500 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </summary>
+                          {!!segment.output && (
+                            <div className="border-t border-neutral-700/50 bg-neutral-900/50 p-3">
+                              <div className="text-xs text-neutral-500 mb-2">Output</div>
+                              <pre className="text-xs text-neutral-300 bg-neutral-950/50 p-2 rounded overflow-x-auto max-h-60 border border-neutral-800">
+                                {typeof segment.output === 'string' ? segment.output : JSON.stringify(segment.output, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                        </details>
+                      </div>
+                    );
+                  }
 
-                    return null;
-                  })}
-                </div>
+                  return null;
+                })}
+              </div>
             </div>
           )}
 
